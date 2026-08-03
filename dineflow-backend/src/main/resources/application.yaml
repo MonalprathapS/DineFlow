@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: dineflow-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dineflow
+    username: postgres
+    password: monal@123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: dineflow-super-secret-key-for-jwt-token-generation-please-change-in-production-2024
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
+
+server:
+  port: 8080
