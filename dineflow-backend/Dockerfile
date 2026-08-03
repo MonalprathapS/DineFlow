@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:25-jdk
 
 WORKDIR /app
 
@@ -10,4 +10,4 @@ RUN ./mvnw clean package -DskipTests
 
 EXPOSE 8080
 
-CMD ["java","-jar","target/dineflow-backend-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","target/dineflow-backend-0.0.1-SNAPSHOT.jar"]
