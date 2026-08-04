@@ -75,11 +75,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid admin credentials"));
 
-        System.out.println("========== LOGIN DEBUG ==========");
-        System.out.println("Email: " + request.getEmail());
-        System.out.println("Password Matches: "
-                + passwordEncoder.matches(request.getPassword(), user.getPassword()));
-        System.out.println("=================================");
+        System.out.println("========== BCRYPT DIAGNOSTIC ==========");
+        System.out.println("Entered Raw Password: " + request.getPassword());
+        System.out.println("Stored DB Password:  " + user.getPassword());
+        System.out.println("Fresh Encoded Hash:  " + passwordEncoder.encode("admin123"));
+        System.out.println("Matches Result:      " + passwordEncoder.matches(request.getPassword(), user.getPassword()));
+        System.out.println("=======================================");
 
         if (!user.getActive()) {
             throw new RuntimeException("User account is disabled");
