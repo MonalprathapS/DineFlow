@@ -95,29 +95,44 @@ public class AuthService {
         );
     }
 
-    public LoginResponse refreshToken(RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-        if (!jwtUtil.validateToken(refreshToken)) {
-            throw new RuntimeException("Invalid or expired refresh token");
-        }
+   public LoginResponse login(LoginRequest request) {
 
-        String email = jwtUtil.extractUsername(refreshToken);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        String accessToken = jwtUtil.generateAccessToken(userDetails, user.getId(), user.getRole().name());
-        String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
+    System.out.println("========== LOGIN DEBUG ==========");
+    System.out.println("Email: " + request.getEmail());
+    System.out.println("Password Entered: " + request.getPassword());
+    System.out.println("DB Hash: " + user.getPassword());
+    System.out.println("Password Matches: " +
+            passwordEncoder.matches(request.getPassword(), user.getPassword()));
+    System.out.println("=================================");
 
-        return new LoginResponse(
-                accessToken,
-                newRefreshToken,
-                accessTokenExpiration / 1000,
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole()
-        );
+    authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                    request.getEmail(),
+                    request.getPassword()
+            )
+    );
+
+    if (!user.getIsActive()) {
+        throw new RuntimeException("User account is disabled");
+    }
+
+    UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+    String accessToken = jwtUtil.generateAccessToken(userDetails, user.getId(), user.getRole().name());
+    String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+
+    return new LoginResponse(
+            accessToken,
+            refreshToken,
+            accessTokenExpiration / 1000,
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole()
+    );
+}
     }
 
     public void logout(String token) {
