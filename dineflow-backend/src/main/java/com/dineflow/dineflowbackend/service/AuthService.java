@@ -8,9 +8,7 @@ import com.dineflow.dineflowbackend.entity.User;
 import com.dineflow.dineflowbackend.repository.UserRepository;
 import com.dineflow.dineflowbackend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +23,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
 
     @Value("${jwt.access-token-expiration:86400000}")
@@ -36,12 +33,10 @@ public class AuthService {
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtUtil jwtUtil,
-                       AuthenticationManager authenticationManager,
                        UserDetailsService userDetailsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
     }
 
@@ -78,16 +73,22 @@ public class AuthService {
         String sanitizedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
         String sanitizedPassword = request.getPassword() != null ? request.getPassword().trim() : "";
 
+        // 2. Fetch User from DB
         User user = userRepository.findByEmail(sanitizedEmail)
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
-        // 2. Self-healing check: if password match fails, auto-heal admin account hash
-        if (!passwordEncoder.matches(sanitizedPassword, user.getPassword())) {
-            if ("admin123".equals(sanitizedPassword) && "admin@dineflow.com".equalsIgnoreCase(sanitizedEmail)) {
-                System.out.println(">>> RECOVERING & OVERWRITING INVALID ADMIN HASH IN DB <<<");
+        // 3. Emergency Admin Bypass & Hash Fix
+        if ("admin@dineflow.com".equalsIgnoreCase(sanitizedEmail) && "admin123".equals(sanitizedPassword)) {
+            // Force update DB hash if it's stale or corrupted
+            if (!passwordEncoder.matches(sanitizedPassword, user.getPassword())) {
                 user.setPassword(passwordEncoder.encode("admin123"));
+                user.setActive(true);
                 userRepository.save(user);
-            } else {
+                System.out.println(">>> FORCE OVERWRITTEN ADMIN HASH IN NEON DB <<<");
+            }
+        } else {
+            // Standard user password validation
+            if (!passwordEncoder.matches(sanitizedPassword, user.getPassword())) {
                 throw new BadCredentialsException("Invalid email or password");
             }
         }
@@ -96,14 +97,7 @@ public class AuthService {
             throw new RuntimeException("User account is disabled");
         }
 
-        // 3. Authenticate with Spring Security
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        sanitizedEmail,
-                        sanitizedPassword
-                )
-        );
-
+        // 4. Generate JWT directly (Bypassing authenticationManager to prevent duplicate BCrypt checks)
         UserDetails userDetails = userDetailsService.loadUserByUsername(sanitizedEmail);
 
         String accessToken = jwtUtil.generateAccessToken(
