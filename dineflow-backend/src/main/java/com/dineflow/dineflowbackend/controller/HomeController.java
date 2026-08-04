@@ -16,7 +16,8 @@ public class HomeController {
         body.put("application", "DineFlow Backend API");
         body.put("status", "running");
         body.put("version", "1.0.0");
-        body.put("frontend", "http://localhost:3000");
+        body.put("frontend", "https://dine-flow-40f1g9i8f-monalprathaps-projects.vercel.app");
+        body.put("build", "917484a");
         body.put("docs", Map.of(
                 "register", "POST /api/auth/register",
                 "login", "POST /api/auth/login",
