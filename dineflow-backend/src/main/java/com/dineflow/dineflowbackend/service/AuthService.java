@@ -9,6 +9,7 @@ import com.dineflow.dineflowbackend.repository.UserRepository;
 import com.dineflow.dineflowbackend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,7 +28,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
 
-    @Value("${jwt.access-token-expiration}")
+    @Value("${jwt.access-token-expiration:86400000}")
     private Long accessTokenExpiration;
 
     private final Set<String> invalidatedTokens = new HashSet<>();
@@ -62,7 +63,7 @@ public class AuthService {
             user.setPhone(request.getPhone());
         }
 
-        user.setIsActive(true);
+        user.setActive(true);
 
         userRepository.save(user);
 
@@ -72,15 +73,17 @@ public class AuthService {
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid admin credentials"));
 
         System.out.println("========== LOGIN DEBUG ==========");
         System.out.println("Email: " + request.getEmail());
-        System.out.println("Password Entered: " + request.getPassword());
-        System.out.println("DB Hash: " + user.getPassword());
         System.out.println("Password Matches: "
                 + passwordEncoder.matches(request.getPassword(), user.getPassword()));
         System.out.println("=================================");
+
+        if (!user.getActive()) {
+            throw new RuntimeException("User account is disabled");
+        }
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -88,10 +91,6 @@ public class AuthService {
                         request.getPassword()
                 )
         );
-
-        if (!user.getIsActive()) {
-            throw new RuntimeException("User account is disabled");
-        }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
