@@ -66,6 +66,12 @@ public class SecurityConfig {
 
         configuration.setAllowedOriginPatterns(List.of(
                 "https://*.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:3000"
+        ));
+        configuration.setAllowedOrigins(List.of(
+                "https://dine-flow-40f1g9i8f-monalprathaps-projects.vercel.app",
+                "https://dine-flow-3440m5w45-monalprathaps-projects.vercel.app",
                 "https://dine-flow-omega.vercel.app",
                 "http://localhost:5173",
                 "http://localhost:3000"
