@@ -28,6 +28,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -40,8 +41,8 @@ public class User {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
-    @Column(nullable = false)
-    private Boolean isActive = true;
+    @Column(name = "is_active", nullable = false)
+    private Boolean active = true; // Renamed to 'active' so Lombok creates standard isActive() / setActive()
 
     @CreationTimestamp
     @Column(updatable = false)
