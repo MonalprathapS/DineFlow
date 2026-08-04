@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios"
 
+// In production, set VITE_API_URL to your backend API base URL.
+// Example: VITE_API_URL=https://<your-railway-backend-domain>/api
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api"
 
 const axiosInstance: AxiosInstance = axios.create({

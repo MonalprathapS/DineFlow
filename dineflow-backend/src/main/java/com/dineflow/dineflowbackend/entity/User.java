@@ -42,7 +42,15 @@ public class User {
     private Restaurant restaurant;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean active = true; // Renamed to 'active' so Lombok creates standard isActive() / setActive()
+    private Boolean active = true; // Renamed to 'active' so Lombok creates standard getActive() / setActive()
+
+    public Boolean getIsActive() {
+        return active;
+    }
+
+    public void setIsActive(Boolean active) {
+        this.active = active;
+    }
 
     @CreationTimestamp
     @Column(updatable = false)
