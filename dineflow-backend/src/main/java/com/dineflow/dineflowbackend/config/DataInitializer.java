@@ -26,7 +26,9 @@ public class DataInitializer implements CommandLineRunner {
                 user.setRole(UserRole.ADMIN);
                 user.setActive(true);
                 userRepository.save(user);
-                System.out.println(">>> Admin account password reset to admin123 <<<");
+                System.out.println("=========================================");
+                System.out.println(">>> ADMIN PASSWORD ENCODED & UPDATED <<<");
+                System.out.println("=========================================");
             },
             () -> {
                 User admin = new User();
@@ -36,7 +38,9 @@ public class DataInitializer implements CommandLineRunner {
                 admin.setRole(UserRole.ADMIN);
                 admin.setActive(true);
                 userRepository.save(admin);
-                System.out.println(">>> Created new Admin account <<<");
+                System.out.println("=========================================");
+                System.out.println(">>> NEW ADMIN ACCOUNT CREATED & SAVED <<<");
+                System.out.println("=========================================");
             }
         );
     }
