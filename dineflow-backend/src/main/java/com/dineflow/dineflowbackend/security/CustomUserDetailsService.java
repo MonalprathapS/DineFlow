@@ -21,17 +21,23 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        // CRITICAL FIX: Explicitly add "ROLE_" prefix
+        String roleName = user.getRole().name();
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                user.getActive(), // Explicitly pass active status as enabled flag
-                true,             // accountNonExpired
-                true,             // credentialsNonExpired
-                true,             // accountNonLocked
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                user.getActive(),
+                true,
+                true,
+                true,
+                Collections.singletonList(new SimpleGrantedAuthority(roleName))
         );
     }
 }

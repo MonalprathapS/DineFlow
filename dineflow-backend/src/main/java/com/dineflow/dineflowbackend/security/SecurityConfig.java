@@ -1,6 +1,5 @@
 package com.dineflow.dineflowbackend.security;
 
-import com.dineflow.dineflowbackend.entity.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -90,9 +89,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/menu/**", "/api/categories/**",
                                 "/api/restaurants/**", "/api/tables/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.name())
-                        .requestMatchers("/api/kitchen/**").hasAnyRole(UserRole.KITCHEN.name(), UserRole.ADMIN.name())
-                        .requestMatchers("/api/staff/**").hasAnyRole(UserRole.STAFF.name(), UserRole.ADMIN.name())
+                        
+                        // Updated to accept both plain role strings and ROLE_ prefixed authorities
+                        .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/api/kitchen/**").hasAnyAuthority("KITCHEN", "ROLE_KITCHEN", "ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyAuthority("STAFF", "ROLE_STAFF", "ADMIN", "ROLE_ADMIN")
+                        
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
