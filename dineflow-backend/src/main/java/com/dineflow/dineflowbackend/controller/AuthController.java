@@ -5,10 +5,23 @@ import com.dineflow.dineflowbackend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(
+        origins = {
+                "https://dine-flow-3440m5w45-monalprathaps-projects.vercel.app",
+                "https://dine-flow-40f1g9i8f-monalprathaps-projects.vercel.app",
+                "https://dine-flow-omega.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:3000"
+        },
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
+        allowCredentials = "false"
+)
 public class AuthController {
 
     private final AuthService authService;
